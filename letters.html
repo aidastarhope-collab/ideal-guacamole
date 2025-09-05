@@ -25,11 +25,11 @@
   /* Grid */
   .grid{
     max-width:1100px; margin:18px auto 48px; padding:0 16px;
-    display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
     gap:20px;
   }
 
-  /* Karte / Umschlag */
+  /* Karte */
   .card{
     background:var(--wrap);
     border:2px solid var(--accent);
@@ -38,58 +38,56 @@
     color:#111;
     display:flex; 
     flex-direction:column;
-    gap:12px;
+    gap:16px;
     transition:opacity .2s ease;
-    position:relative;
+    min-height:280px;
   }
-  .card.locked{opacity:.4; pointer-events:none; filter:grayscale(50%)}
+  .card.locked{opacity:.4; filter:grayscale(50%)}
 
-  /* Umschlag-Container - feste Höhe wichtig! */
-  .envelope-container{
+  /* Umschlag */
+  .envelope{
     position:relative;
-    height:200px;
+    height:180px;
+    background:var(--body);
     border-radius:10px;
     overflow:hidden;
-    background:var(--body);
-    box-shadow:inset 0 0 0 2px rgba(0,0,0,.05);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.1);
   }
 
-  /* Umschlag-Boden */
-  .envelope-base{
+  /* Umschlag geschlossen - zeigt nur die Klappe */
+  .envelope-closed{
     position:absolute;
     top:0; left:0; right:0; bottom:0;
     background:var(--body);
-    border-radius:8px;
+    border-radius:10px;
+    z-index:2;
   }
 
-  /* Klappe - Dreieck oben */
-  .envelope-flap{
+  /* Dreieckige Klappe */
+  .flap{
     position:absolute;
     top:0; left:0; right:0;
-    height:70px;
+    height:80px;
     background:var(--flap);
     clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
-    transform-origin:50% 0%;
-    transform:rotateX(0deg);
-    transition:transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index:3;
   }
 
   /* Herz-Siegel */
-  .heart-seal{
+  .seal{
     position:absolute;
-    top:50px;
+    top:60px;
     left:50%;
     width:20px;
     height:20px;
     background:var(--seal);
     transform:translate(-50%, -50%) rotate(45deg);
-    border-radius:3px;
+    border-radius:2px;
     z-index:4;
-    transition:all 0.5s ease;
+    box-shadow:0 2px 4px rgba(0,0,0,.3);
   }
-  .heart-seal::before,
-  .heart-seal::after {
+  .seal::before,
+  .seal::after {
     content:'';
     position:absolute;
     width:20px;
@@ -97,60 +95,47 @@
     background:var(--seal);
     border-radius:50%;
   }
-  .heart-seal::before {
-    top:-10px;
-    left:0;
-  }
-  .heart-seal::after {
-    top:0;
-    left:-10px;
-  }
+  .seal::before { top:-10px; left:0; }
+  .seal::after { top:0; left:-10px; }
 
-  /* Brief-Inhalt */
-  .letter-content{
+  /* Brief-Inhalt - standardmäßig versteckt */
+  .letter{
     position:absolute;
-    top:80px;
-    left:50%;
-    width:90%;
+    top:20px; left:20px; right:20px; bottom:20px;
     background:var(--paper);
     color:var(--text);
     border-radius:8px;
     padding:16px;
     box-shadow:0 4px 12px rgba(0,0,0,.2);
-    transform:translate(-50%, 100%);
-    transition:transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index:2;
-    min-height:100px;
+    z-index:1;
     opacity:0;
-    transition:transform 0.8s ease, opacity 0.8s ease;
+    transform:scale(0.8);
+    transition:all 0.5s ease;
   }
-  .letter-content p{
+  .letter p{
     margin:0;
     font-size:14px;
     line-height:1.5;
   }
 
-  /* Öffnen-Animation */
-  .card.open .envelope-flap{
-    transform:rotateX(-180deg);
+  /* Geöffneter Zustand */
+  .card.opened .envelope-closed{
+    opacity:0;
+    transform:rotateY(180deg);
+    transition:all 0.6s ease;
   }
-  .card.open .heart-seal{
-    transform:translate(-50%, -50%) rotate(45deg) scale(0.7);
-    opacity:0.5;
-  }
-  .card.open .letter-content{
-    transform:translate(-50%, 0%);
+  .card.opened .letter{
     opacity:1;
-    transition-delay:0.4s;
+    transform:scale(1);
+    transition-delay:0.3s;
   }
 
-  /* Button und Titel */
+  /* Footer */
   .card-footer{
     display:flex; 
     gap:12px; 
     align-items:center; 
     justify-content:space-between;
-    margin-top:auto;
   }
   .card-title{
     margin:0; 
@@ -161,13 +146,13 @@
     align-items:center; 
     gap:8px;
   }
-  .status-badge{
+  .badge{
     font-size:11px; 
     font-weight:700; 
     color:#111;
     background:#fde68a; 
     border:1px dashed var(--accent);
-    padding:2px 6px; 
+    padding:3px 8px; 
     border-radius:12px;
   }
   .toggle-btn{
@@ -178,15 +163,14 @@
     cursor:pointer;
     background:var(--btn);
     font-size:13px;
-    transition:all .2s ease;
+    transition:background .2s ease;
   }
   .toggle-btn:hover:not(:disabled){background:var(--btn-hover)}
-  .toggle-btn:disabled{opacity:0.5; cursor:not-allowed; background:#ccc;}
+  .toggle-btn:disabled{opacity:0.5; cursor:not-allowed; background:#999;}
 
   @media (max-width: 768px) {
     .grid{
       grid-template-columns:1fr;
-      gap:16px;
     }
   }
 </style>
@@ -227,63 +211,71 @@
   MESSAGES.forEach((message, index) => {
     const isUnlocked = index < unlockedCount;
     
-    // Karte
+    // Hauptkarte
     const card = document.createElement('div');
     card.className = 'card' + (isUnlocked ? '' : ' locked');
     
     // Umschlag-Container
-    const envelopeContainer = document.createElement('div');
-    envelopeContainer.className = 'envelope-container';
+    const envelope = document.createElement('div');
+    envelope.className = 'envelope';
     
-    // Umschlag-Teile
-    const envelopeBase = document.createElement('div');
-    envelopeBase.className = 'envelope-base';
-    
-    const envelopeFlap = document.createElement('div');
-    envelopeFlap.className = 'envelope-flap';
-    
-    const heartSeal = document.createElement('div');
-    heartSeal.className = 'heart-seal';
-    
-    const letterContent = document.createElement('div');
-    letterContent.className = 'letter-content';
+    // Brief-Inhalt (versteckt)
+    const letter = document.createElement('div');
+    letter.className = 'letter';
     const letterText = document.createElement('p');
     letterText.textContent = message;
-    letterContent.appendChild(letterText);
+    letter.appendChild(letterText);
+    
+    // Geschlossener Umschlag
+    const envelopeClosed = document.createElement('div');
+    envelopeClosed.className = 'envelope-closed';
+    
+    const flap = document.createElement('div');
+    flap.className = 'flap';
+    
+    const seal = document.createElement('div');
+    seal.className = 'seal';
     
     // Zusammenbauen
-    envelopeContainer.appendChild(envelopeBase);
-    envelopeContainer.appendChild(letterContent);
-    envelopeContainer.appendChild(envelopeFlap);
-    envelopeContainer.appendChild(heartSeal);
+    envelopeClosed.appendChild(flap);
+    envelopeClosed.appendChild(seal);
     
-    // Footer
+    envelope.appendChild(letter);
+    envelope.appendChild(envelopeClosed);
+    
+    // Footer mit Button
     const footer = document.createElement('div');
     footer.className = 'card-footer';
     
     const title = document.createElement('h3');
     title.className = 'card-title';
-    title.innerHTML = `Brief ${index + 1} <span class="status-badge">${isUnlocked ? 'freigeschaltet' : 'gesperrt'}</span>`;
+    title.innerHTML = `Brief ${index + 1} <span class="badge">${isUnlocked ? 'freigeschaltet' : 'gesperrt'}</span>`;
     
     const button = document.createElement('button');
     button.className = 'toggle-btn';
     button.textContent = isUnlocked ? 'Öffnen' : 'Gesperrt';
-    button.disabled = !isUnlocked;
     
-    // Event für Öffnen/Schließen
-    if (isUnlocked) {
+    if (!isUnlocked) {
+      button.disabled = true;
+    } else {
+      // Event für Öffnen/Schließen
       let isOpen = false;
       button.addEventListener('click', () => {
         isOpen = !isOpen;
-        card.classList.toggle('open', isOpen);
-        button.textContent = isOpen ? 'Schließen' : 'Öffnen';
+        if (isOpen) {
+          card.classList.add('opened');
+          button.textContent = 'Schließen';
+        } else {
+          card.classList.remove('opened');
+          button.textContent = 'Öffnen';
+        }
       });
     }
     
     footer.appendChild(title);
     footer.appendChild(button);
     
-    card.appendChild(envelopeContainer);
+    card.appendChild(envelope);
     card.appendChild(footer);
     grid.appendChild(card);
   });
