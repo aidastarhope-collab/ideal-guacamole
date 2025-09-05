@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
-<title>💌 Briefe – Note & Klappe animiert</title>
+<title>💌 Briefe für dich</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
@@ -25,8 +25,8 @@
   /* Grid */
   .grid{
     max-width:1100px; margin:18px auto 48px; padding:0 16px;
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
-    gap:18px;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+    gap:20px;
   }
 
   /* Karte / Umschlag */
@@ -36,145 +36,157 @@
     border-radius:14px;
     padding:16px;
     color:#111;
-    display:flex; flex-direction:column;
+    display:flex; 
+    flex-direction:column;
     gap:12px;
     transition:opacity .2s ease;
-    min-height:280px;
-  }
-  .card.locked{opacity:.35; pointer-events:none; filter:saturate(.45)}
-
-  /* Umschlag-Box – hier passiert die Action */
-  .envelope{
     position:relative;
-    background:var(--body);
+  }
+  .card.locked{opacity:.4; pointer-events:none; filter:grayscale(50%)}
+
+  /* Umschlag-Container - feste Höhe wichtig! */
+  .envelope-container{
+    position:relative;
+    height:200px;
     border-radius:10px;
-    height:180px;
-    overflow:visible; /* Wichtig: Note soll herausfahren können */
+    overflow:hidden;
+    background:var(--body);
     box-shadow:inset 0 0 0 2px rgba(0,0,0,.05);
-    perspective:1000px;
   }
 
-  /* Klappe: eigenes Element mit clip-path */
-  .flap{
-    position:absolute; 
-    left:0; right:0; top:0; height:80px;
+  /* Umschlag-Boden */
+  .envelope-base{
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    background:var(--body);
+    border-radius:8px;
+  }
+
+  /* Klappe - Dreieck oben */
+  .envelope-flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:70px;
     background:var(--flap);
     clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
-    transform-origin:50% 0;
+    transform-origin:50% 0%;
     transform:rotateX(0deg);
-    transition:transform .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    backface-visibility:hidden;
+    transition:transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index:3;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
   }
 
   /* Herz-Siegel */
-  .seal{
-    position:absolute; 
-    left:50%; top:60%;
-    width:24px; height:24px; 
-    transform:translate(-50%,-50%) rotate(45deg);
-    background:var(--seal); 
-    box-shadow:0 2px 8px rgba(0,0,0,.3);
-    border-radius:3px; 
+  .heart-seal{
+    position:absolute;
+    top:50px;
+    left:50%;
+    width:20px;
+    height:20px;
+    background:var(--seal);
+    transform:translate(-50%, -50%) rotate(45deg);
+    border-radius:3px;
     z-index:4;
-    transition:all .3s ease;
+    transition:all 0.5s ease;
   }
-  .seal::before,.seal::after{
-    content:""; 
-    position:absolute; 
-    width:24px; height:24px; 
-    background:var(--seal); 
+  .heart-seal::before,
+  .heart-seal::after {
+    content:'';
+    position:absolute;
+    width:20px;
+    height:20px;
+    background:var(--seal);
     border-radius:50%;
   }
-  .seal::before{ top:-12px; left:0; }
-  .seal::after{  top:0; left:-12px; }
+  .heart-seal::before {
+    top:-10px;
+    left:0;
+  }
+  .heart-seal::after {
+    top:0;
+    left:-10px;
+  }
 
-  /* Note (Nachricht) – fährt aus dem Umschlag heraus */
-  .note{
-    position:absolute; 
-    left:50%; top:20px;
-    width:85%; 
-    transform:translate(-50%, 160px); /* Start: im Umschlag versteckt */
-    background:var(--paper); 
+  /* Brief-Inhalt */
+  .letter-content{
+    position:absolute;
+    top:80px;
+    left:50%;
+    width:90%;
+    background:var(--paper);
     color:var(--text);
-    border-radius:8px; 
+    border-radius:8px;
     padding:16px;
-    box-shadow:0 4px 20px rgba(0,0,0,.25);
+    box-shadow:0 4px 12px rgba(0,0,0,.2);
+    transform:translate(-50%, 100%);
+    transition:transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index:2;
-    transition:transform .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    min-height:120px;
-    display:flex; 
-    align-items:flex-start; 
-    justify-content:flex-start;
+    min-height:100px;
+    opacity:0;
+    transition:transform 0.8s ease, opacity 0.8s ease;
   }
-  .note p{
-    margin:0; 
-    font-size:14px; 
+  .letter-content p{
+    margin:0;
+    font-size:14px;
     line-height:1.5;
-    word-wrap:break-word;
   }
 
-  /* Animationen beim Öffnen */
-  .card.opening .flap{ 
-    transform:rotateX(-160deg); 
-    transition-delay:0s;
+  /* Öffnen-Animation */
+  .card.open .envelope-flap{
+    transform:rotateX(-180deg);
   }
-  .card.opening .seal{ 
-    transform:translate(-50%,-50%) rotate(45deg) scale(0.8);
-    opacity:0.7;
-    transition-delay:0.2s;
+  .card.open .heart-seal{
+    transform:translate(-50%, -50%) rotate(45deg) scale(0.7);
+    opacity:0.5;
   }
-  .card.opening .note{
-    transform:translate(-50%, -20px);
-    transition-delay:0.3s;
-  }
-
-  /* Geschlossen-Zustand */
-  .card:not(.opening) .flap{ 
-    transform:rotateX(0deg); 
-  }
-  .card:not(.opening) .seal{ 
-    transform:translate(-50%,-50%) rotate(45deg) scale(1);
+  .card.open .letter-content{
+    transform:translate(-50%, 0%);
     opacity:1;
-  }
-  .card:not(.opening) .note{
-    transform:translate(-50%, 160px);
+    transition-delay:0.4s;
   }
 
-  .row{
-    display:flex; gap:8px; align-items:center; justify-content:space-between;
+  /* Button und Titel */
+  .card-footer{
+    display:flex; 
+    gap:12px; 
+    align-items:center; 
+    justify-content:space-between;
     margin-top:auto;
   }
-  .title{
-    margin:0; font-size:16px; font-weight:800; color:#111;
-    display:flex; align-items:center; gap:8px;
+  .card-title{
+    margin:0; 
+    font-size:16px; 
+    font-weight:800; 
+    color:#111;
+    display:flex; 
+    align-items:center; 
+    gap:8px;
   }
-  .badge{
-    font-size:11px; font-weight:700; color:#111;
-    background:#fde68a; border:1px dashed var(--accent);
-    padding:2px 8px; border-radius:20px;
+  .status-badge{
+    font-size:11px; 
+    font-weight:700; 
+    color:#111;
+    background:#fde68a; 
+    border:1px dashed var(--accent);
+    padding:2px 6px; 
+    border-radius:12px;
   }
-  .toggle{
+  .toggle-btn{
     padding:8px 12px;
-    border:0; border-radius:8px; font-weight:700; cursor:pointer;
+    border:0; 
+    border-radius:8px; 
+    font-weight:700; 
+    cursor:pointer;
     background:var(--btn);
     font-size:13px;
     transition:all .2s ease;
   }
-  .toggle:hover{background:var(--btn-hover)}
-  .toggle:disabled{opacity:0.5; cursor:not-allowed;}
+  .toggle-btn:hover:not(:disabled){background:var(--btn-hover)}
+  .toggle-btn:disabled{opacity:0.5; cursor:not-allowed; background:#ccc;}
 
   @media (max-width: 768px) {
     .grid{
       grid-template-columns:1fr;
       gap:16px;
-    }
-    .card{
-      min-height:260px;
-    }
-    .envelope{
-      height:160px;
     }
   }
 </style>
@@ -194,8 +206,7 @@
 
 <script>
 (() => {
-  // ===== Einstellungen =====
-  const TOTAL = 5; // Anzahl Briefe
+  // Brief-Inhalte
   const MESSAGES = [
     "Liebe/r [Name], dies ist dein erster Brief! Ich freue mich so sehr, dass du das Spiel gemeistert hast. Du bist wirklich besonders! ❤️",
     "Brief Nummer 2: Erinnerst du dich noch an [gemeinsame Erinnerung]? Das war einer der schönsten Momente mit dir! 🌟",
@@ -204,71 +215,82 @@
     "Der letzte Brief: Du hast alle Briefe freigeschaltet! Das zeigt, wie großartig du bist. Ich bin stolz auf dich! 🎉✨"
   ];
 
-  // Score aus der Session
+  // Score aus Session Storage
   const unlockedCount = parseInt(sessionStorage.getItem('bananaScore') || '0', 10);
-
+  
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
+  
   meta.textContent = `Freigeschaltet: ${Math.min(unlockedCount, MESSAGES.length)} / ${MESSAGES.length} (Score: ${unlockedCount})`;
 
-  MESSAGES.forEach((msg, idx) => {
-    const isUnlocked = idx < unlockedCount;
+  // Briefe erstellen
+  MESSAGES.forEach((message, index) => {
+    const isUnlocked = index < unlockedCount;
     
+    // Karte
     const card = document.createElement('div');
     card.className = 'card' + (isUnlocked ? '' : ' locked');
-
-    // Umschlag: enthält Flap (oben), Note (drin) und Siegel (oben)
-    const envelope = document.createElement('div');
-    envelope.className = 'envelope';
-
-    const flap = document.createElement('div');
-    flap.className = 'flap';
-
-    const note = document.createElement('div');
-    note.className = 'note';
-    const p = document.createElement('p');
-    p.textContent = msg;
-    note.appendChild(p);
-
-    const seal = document.createElement('div');
-    seal.className = 'seal';
-
-    envelope.appendChild(note);
-    envelope.appendChild(flap);
-    envelope.appendChild(seal);
-
-    // Zeile mit Button
-    const row = document.createElement('div');
-    row.className = 'row';
-    const title = document.createElement('h3');
-    title.className = 'title';
-    title.innerHTML = `Brief ${idx+1} <span class="badge">${isUnlocked ? 'freigeschaltet' : 'gesperrt'}</span>`;
     
-    const btn = document.createElement('button');
-    btn.className = 'toggle';
-    btn.textContent = isUnlocked ? 'Öffnen' : 'Gesperrt';
-    btn.disabled = !isUnlocked;
-
+    // Umschlag-Container
+    const envelopeContainer = document.createElement('div');
+    envelopeContainer.className = 'envelope-container';
+    
+    // Umschlag-Teile
+    const envelopeBase = document.createElement('div');
+    envelopeBase.className = 'envelope-base';
+    
+    const envelopeFlap = document.createElement('div');
+    envelopeFlap.className = 'envelope-flap';
+    
+    const heartSeal = document.createElement('div');
+    heartSeal.className = 'heart-seal';
+    
+    const letterContent = document.createElement('div');
+    letterContent.className = 'letter-content';
+    const letterText = document.createElement('p');
+    letterText.textContent = message;
+    letterContent.appendChild(letterText);
+    
+    // Zusammenbauen
+    envelopeContainer.appendChild(envelopeBase);
+    envelopeContainer.appendChild(letterContent);
+    envelopeContainer.appendChild(envelopeFlap);
+    envelopeContainer.appendChild(heartSeal);
+    
+    // Footer
+    const footer = document.createElement('div');
+    footer.className = 'card-footer';
+    
+    const title = document.createElement('h3');
+    title.className = 'card-title';
+    title.innerHTML = `Brief ${index + 1} <span class="status-badge">${isUnlocked ? 'freigeschaltet' : 'gesperrt'}</span>`;
+    
+    const button = document.createElement('button');
+    button.className = 'toggle-btn';
+    button.textContent = isUnlocked ? 'Öffnen' : 'Gesperrt';
+    button.disabled = !isUnlocked;
+    
+    // Event für Öffnen/Schließen
     if (isUnlocked) {
       let isOpen = false;
-      btn.addEventListener('click', () => {
+      button.addEventListener('click', () => {
         isOpen = !isOpen;
-        card.classList.toggle('opening', isOpen);
-        btn.textContent = isOpen ? 'Schließen' : 'Öffnen';
+        card.classList.toggle('open', isOpen);
+        button.textContent = isOpen ? 'Schließen' : 'Öffnen';
       });
     }
-
-    row.appendChild(title);
-    row.appendChild(btn);
-
-    card.appendChild(envelope);
-    card.appendChild(row);
+    
+    footer.appendChild(title);
+    footer.appendChild(button);
+    
+    card.appendChild(envelopeContainer);
+    card.appendChild(footer);
     grid.appendChild(card);
   });
 
-  // Score zurücksetzen (nur Komfort)
-  document.getElementById('reset').addEventListener('click', ()=>{
-    if(confirm('Möchtest du wirklich den Score zurücksetzen? Alle Briefe werden wieder gesperrt.')) {
+  // Reset Button
+  document.getElementById('reset').addEventListener('click', () => {
+    if (confirm('Möchtest du wirklich den Score zurücksetzen? Alle Briefe werden wieder gesperrt.')) {
       sessionStorage.removeItem('bananaScore');
       location.reload();
     }
