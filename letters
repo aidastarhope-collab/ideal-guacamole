@@ -2,166 +2,277 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
-<title>🍌 Banana Game</title>
+<title>💌 Briefe – Note & Klappe animiert</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
+  :root{
+    --bg:#05353d; --paper:#fff; --text:#374151;
+    --wrap:#f5edd1; --flap:#ecdeb8; --body:#e6cfa7;
+    --accent:#f59e0b; --btn:#fbbf24; --btn-hover:#fcd34d;
+    --seal:#fb18e3;
+  }
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif;text-align:center;background:#fff7ed;color:#111}
-  h1{margin:20px 0}
-  .hud{display:flex;gap:16px;justify-content:center;margin:8px 0 0;font-weight:600}
-  canvas{background:#fde68a;border:2px solid #f59e0b;margin:16px auto;display:block;max-width:90vw}
-  #nextBtn{display:none;margin:8px auto 16px;padding:10px 16px;font-weight:700;border:0;border-radius:10px;background:#fbbf24;cursor:pointer}
-  #nextBtn:hover{background:#fcd34d}
-  .controls{margin:16px 0;padding:0 16px}
-  .controls p{margin:8px 0;font-size:14px;color:#666}
-  a{color:#111;text-decoration:none}
-  
-  /* Touch Controls */
-  .touch-controls{display:none;margin:16px 0;gap:16px;justify-content:center}
-  .touch-btn{padding:12px 20px;font-size:18px;border:0;border-radius:10px;background:#f59e0b;color:white;font-weight:700;cursor:pointer;user-select:none}
-  .touch-btn:hover{background:#d97706}
-  .touch-btn:active{transform:scale(0.95)}
-  
+  body{margin:0;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif}
+  header{max-width:1100px;margin:24px auto 8px;padding:0 16px}
+  h1{margin:0 0 10px}
+  .meta{opacity:.9;margin:0 0 10px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:10px 14px;border:0;border-radius:10px;font-weight:700;cursor:pointer}
+  .btn.primary{background:#0a5c6d;color:#fff}
+  .btn.primary:hover{background:#0d768b}
+  .btn.light{background:#f3f4f6;color:#111}
+
+  /* Grid */
+  .grid{
+    max-width:1100px; margin:18px auto 48px; padding:0 16px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:18px;
+  }
+
+  /* Karte / Umschlag */
+  .card{
+    background:var(--wrap);
+    border:2px solid var(--accent);
+    border-radius:14px;
+    padding:16px;
+    color:#111;
+    display:flex; flex-direction:column;
+    gap:12px;
+    transition:opacity .2s ease;
+    min-height:280px;
+  }
+  .card.locked{opacity:.35; pointer-events:none; filter:saturate(.45)}
+
+  /* Umschlag-Box – hier passiert die Action */
+  .envelope{
+    position:relative;
+    background:var(--body);
+    border-radius:10px;
+    height:180px;
+    overflow:visible; /* Wichtig: Note soll herausfahren können */
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,.05);
+    perspective:1000px;
+  }
+
+  /* Klappe: eigenes Element mit clip-path */
+  .flap{
+    position:absolute; 
+    left:0; right:0; top:0; height:80px;
+    background:var(--flap);
+    clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+    transform-origin:50% 0;
+    transform:rotateX(0deg);
+    transition:transform .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    backface-visibility:hidden;
+    z-index:3;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  /* Herz-Siegel */
+  .seal{
+    position:absolute; 
+    left:50%; top:60%;
+    width:24px; height:24px; 
+    transform:translate(-50%,-50%) rotate(45deg);
+    background:var(--seal); 
+    box-shadow:0 2px 8px rgba(0,0,0,.3);
+    border-radius:3px; 
+    z-index:4;
+    transition:all .3s ease;
+  }
+  .seal::before,.seal::after{
+    content:""; 
+    position:absolute; 
+    width:24px; height:24px; 
+    background:var(--seal); 
+    border-radius:50%;
+  }
+  .seal::before{ top:-12px; left:0; }
+  .seal::after{  top:0; left:-12px; }
+
+  /* Note (Nachricht) – fährt aus dem Umschlag heraus */
+  .note{
+    position:absolute; 
+    left:50%; top:20px;
+    width:85%; 
+    transform:translate(-50%, 160px); /* Start: im Umschlag versteckt */
+    background:var(--paper); 
+    color:var(--text);
+    border-radius:8px; 
+    padding:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,.25);
+    z-index:2;
+    transition:transform .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    min-height:120px;
+    display:flex; 
+    align-items:flex-start; 
+    justify-content:flex-start;
+  }
+  .note p{
+    margin:0; 
+    font-size:14px; 
+    line-height:1.5;
+    word-wrap:break-word;
+  }
+
+  /* Animationen beim Öffnen */
+  .card.opening .flap{ 
+    transform:rotateX(-160deg); 
+    transition-delay:0s;
+  }
+  .card.opening .seal{ 
+    transform:translate(-50%,-50%) rotate(45deg) scale(0.8);
+    opacity:0.7;
+    transition-delay:0.2s;
+  }
+  .card.opening .note{
+    transform:translate(-50%, -20px);
+    transition-delay:0.3s;
+  }
+
+  /* Geschlossen-Zustand */
+  .card:not(.opening) .flap{ 
+    transform:rotateX(0deg); 
+  }
+  .card:not(.opening) .seal{ 
+    transform:translate(-50%,-50%) rotate(45deg) scale(1);
+    opacity:1;
+  }
+  .card:not(.opening) .note{
+    transform:translate(-50%, 160px);
+  }
+
+  .row{
+    display:flex; gap:8px; align-items:center; justify-content:space-between;
+    margin-top:auto;
+  }
+  .title{
+    margin:0; font-size:16px; font-weight:800; color:#111;
+    display:flex; align-items:center; gap:8px;
+  }
+  .badge{
+    font-size:11px; font-weight:700; color:#111;
+    background:#fde68a; border:1px dashed var(--accent);
+    padding:2px 8px; border-radius:20px;
+  }
+  .toggle{
+    padding:8px 12px;
+    border:0; border-radius:8px; font-weight:700; cursor:pointer;
+    background:var(--btn);
+    font-size:13px;
+    transition:all .2s ease;
+  }
+  .toggle:hover{background:var(--btn-hover)}
+  .toggle:disabled{opacity:0.5; cursor:not-allowed;}
+
   @media (max-width: 768px) {
-    .touch-controls{display:flex}
+    .grid{
+      grid-template-columns:1fr;
+      gap:16px;
+    }
+    .card{
+      min-height:260px;
+    }
+    .envelope{
+      height:160px;
+    }
   }
 </style>
 </head>
 <body>
-  <h1>🍌 Banana Cat fängt Herzen</h1>
-  <div class="hud">
-    <div>Score: <span id="scoreEl">0</span></div>
-    <div>Zeit: <span id="timeEl">20</span>s</div>
+
+<header>
+  <h1>📜 Briefe für dich</h1>
+  <div class="meta" id="meta">–</div>
+  <div class="actions">
+    <a href="game.html" class="btn primary">⬅️ Zurück zum Spiel</a>
+    <button id="reset" class="btn light">Score zurücksetzen</button>
   </div>
+</header>
 
-  <canvas id="game" width="400" height="400"></canvas>
-
-  <div class="touch-controls">
-    <button class="touch-btn" id="leftBtn">⬅️ Links</button>
-    <button class="touch-btn" id="rightBtn">➡️ Rechts</button>
-  </div>
-
-  <div class="controls">
-    <p>🖥️ Computer: Pfeiltasten ← → zum Steuern</p>
-    <p>📱 Handy: Buttons oben verwenden</p>
-  </div>
-
-  <button id="nextBtn" onclick="window.location.href='letters.html'">➡️ Weiter zu den Briefen</button>
-  <p><a href="letters.html">Direkt zu den Briefen</a> (nutzt aktuellen Session-Score)</p>
+<section class="grid" id="grid"></section>
 
 <script>
 (() => {
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const scoreEl = document.getElementById('scoreEl');
-  const timeEl = document.getElementById('timeEl');
-  const nextBtn = document.getElementById('nextBtn');
-  const leftBtn = document.getElementById('leftBtn');
-  const rightBtn = document.getElementById('rightBtn');
+  // ===== Einstellungen =====
+  const TOTAL = 5; // Anzahl Briefe
+  const MESSAGES = [
+    "Liebe/r [Name], dies ist dein erster Brief! Ich freue mich so sehr, dass du das Spiel gemeistert hast. Du bist wirklich besonders! ❤️",
+    "Brief Nummer 2: Erinnerst du dich noch an [gemeinsame Erinnerung]? Das war einer der schönsten Momente mit dir! 🌟",
+    "Der dritte Brief: Deine [positive Eigenschaft] beeindruckt mich immer wieder. Du machst die Welt zu einem besseren Ort! 🌈",
+    "Brief vier ist da: Egal was passiert, ich bin immer für dich da. Unsere Freundschaft bedeutet mir unendlich viel! 🤗",
+    "Der letzte Brief: Du hast alle Briefe freigeschaltet! Das zeigt, wie großartig du bist. Ich bin stolz auf dich! 🎉✨"
+  ];
 
-  // Spieler
-  const player = { x: 180, y: 360, w: 40, h: 20, speed: 20 };
-  // Herzen
-  let hearts = [];
-  let score = 0;
-  let timeLeft = 20; // Exakt 20 Sekunden wie gewünscht
-  let gameOver = false;
+  // Score aus der Session
+  const unlockedCount = parseInt(sessionStorage.getItem('bananaScore') || '0', 10);
 
-  function spawnHeart(){
-    if(gameOver) return;
-    hearts.push({ x: Math.random()*360, y: -10, vy: 1.6 + Math.random()*1.4 });
-  }
+  const grid = document.getElementById('grid');
+  const meta = document.getElementById('meta');
+  meta.textContent = `Freigeschaltet: ${Math.min(unlockedCount, MESSAGES.length)} / ${MESSAGES.length} (Score: ${unlockedCount})`;
 
-  function draw(){
-    ctx.clearRect(0,0,400,400);
+  MESSAGES.forEach((msg, idx) => {
+    const isUnlocked = idx < unlockedCount;
+    
+    const card = document.createElement('div');
+    card.className = 'card' + (isUnlocked ? '' : ' locked');
 
-    // Spieler (Banana Cat als gelbes Rechteck)
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(player.x, player.y, player.w, player.h);
+    // Umschlag: enthält Flap (oben), Note (drin) und Siegel (oben)
+    const envelope = document.createElement('div');
+    envelope.className = 'envelope';
 
-    // Herzen (Emoji Text)
-    ctx.font = '18px Arial';
-    ctx.fillStyle = 'red';
-    hearts.forEach(h => ctx.fillText('❤️', h.x, h.y));
+    const flap = document.createElement('div');
+    flap.className = 'flap';
 
-    // HUD im Canvas (redundant)
-    ctx.fillStyle = '#111';
-    ctx.font = '14px Arial';
-    ctx.fillText('Score: ' + score, 10, 20);
-    ctx.fillText('Zeit: ' + timeLeft + 's', 330, 20);
+    const note = document.createElement('div');
+    note.className = 'note';
+    const p = document.createElement('p');
+    p.textContent = msg;
+    note.appendChild(p);
 
-    if(gameOver){
-      ctx.fillStyle = '#111';
-      ctx.font = '22px Arial';
-      ctx.fillText('⏳ Zeit abgelaufen!', 105, 200);
-      ctx.fillText('Endscore: ' + score, 135, 230);
+    const seal = document.createElement('div');
+    seal.className = 'seal';
+
+    envelope.appendChild(note);
+    envelope.appendChild(flap);
+    envelope.appendChild(seal);
+
+    // Zeile mit Button
+    const row = document.createElement('div');
+    row.className = 'row';
+    const title = document.createElement('h3');
+    title.className = 'title';
+    title.innerHTML = `Brief ${idx+1} <span class="badge">${isUnlocked ? 'freigeschaltet' : 'gesperrt'}</span>`;
+    
+    const btn = document.createElement('button');
+    btn.className = 'toggle';
+    btn.textContent = isUnlocked ? 'Öffnen' : 'Gesperrt';
+    btn.disabled = !isUnlocked;
+
+    if (isUnlocked) {
+      let isOpen = false;
+      btn.addEventListener('click', () => {
+        isOpen = !isOpen;
+        card.classList.toggle('opening', isOpen);
+        btn.textContent = isOpen ? 'Schließen' : 'Öffnen';
+      });
     }
-  }
 
-  function update(){
-    if(gameOver) return;
-    hearts.forEach(h => h.y += h.vy);
-    // Kollisionen + Filter
-    hearts = hearts.filter(h => {
-      if(h.y > 420) return false; // unten raus
-      const withinX = h.x > player.x && h.x < player.x + player.w;
-      const withinY = h.y > player.y && h.y < player.y + player.h + 10;
-      if(withinX && withinY){ score++; scoreEl.textContent = score; return false; }
-      return true;
-    });
-  }
+    row.appendChild(title);
+    row.appendChild(btn);
 
-  function loop(){
-    update(); draw();
-    requestAnimationFrame(loop);
-  }
-
-  function moveLeft(){
-    if(gameOver) return;
-    player.x = Math.max(0, player.x - player.speed);
-  }
-
-  function moveRight(){
-    if(gameOver) return;
-    player.x = Math.min(360, player.x + player.speed);
-  }
-
-  // Keyboard-Steuerung
-  document.addEventListener('keydown', e=>{
-    if(e.key === 'ArrowLeft') moveLeft();
-    if(e.key === 'ArrowRight') moveRight();
+    card.appendChild(envelope);
+    card.appendChild(row);
+    grid.appendChild(card);
   });
 
-  // Touch-Steuerung
-  leftBtn.addEventListener('click', moveLeft);
-  rightBtn.addEventListener('click', moveRight);
-  
-  // Touch events für bessere mobile Erfahrung
-  leftBtn.addEventListener('touchstart', e => {e.preventDefault(); moveLeft();});
-  rightBtn.addEventListener('touchstart', e => {e.preventDefault(); moveRight();});
-
-  // Timer runterzählen
-  const timer = setInterval(()=>{
-    if(timeLeft > 0){
-      timeLeft--; timeEl.textContent = timeLeft;
-    } else {
-      clearInterval(timer);
-      gameOver = true;
-      // Score für diese Session speichern
-      sessionStorage.setItem('bananaScore', String(score));
-      nextBtn.style.display = 'inline-block';
+  // Score zurücksetzen (nur Komfort)
+  document.getElementById('reset').addEventListener('click', ()=>{
+    if(confirm('Möchtest du wirklich den Score zurücksetzen? Alle Briefe werden wieder gesperrt.')) {
+      sessionStorage.removeItem('bananaScore');
+      location.reload();
     }
-  }, 1000);
-
-  // Spawns
-  const spawner = setInterval(spawnHeart, 800);
-
-  // Sicherheits-Stopp bei Game Over
-  const stopCheck = setInterval(()=>{
-    if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); }
-  }, 300);
-
-  loop();
+  });
 })();
 </script>
 </body>
