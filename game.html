@@ -92,7 +92,7 @@
     if(gameOver){
       ctx.fillStyle = '#111';
       ctx.font = '22px Arial';
-      ctx.fillText('⏳ Zeit abgelaufen!', 105, 200);
+      ctx.fillText('⏳ time is over!', 105, 200);
       ctx.fillText('Endscore: ' + score, 135, 230);
     }
   }
@@ -147,7 +147,7 @@
       clearInterval(timer);
       gameOver = true;
       // Score für diese Session speichern
-      sessionStorage.setItem('bananaScore', String(score));
+      sessionStorage.setItem('heartScore', String(score));
       nextBtn.style.display = 'inline-block';
     }
   }, 1000);
