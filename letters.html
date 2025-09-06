@@ -217,7 +217,7 @@
   ];
 
   // Score aus Session Storage
-  const unlockedCount = parseInt(sessionStorage.getItem('bananaScore') || '0', 10);
+  const unlockedCount = parseInt(sessionStorage.getItem('heartScore') || '0', 10);
   
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
@@ -301,7 +301,7 @@
   // Reset Button
   document.getElementById('reset').addEventListener('click', () => {
     if (confirm('Möchtest du wirklich den Score zurücksetzen? Alle Briefe werden wieder gesperrt.')) {
-      sessionStorage.removeItem('bananaScore');
+      sessionStorage.removeItem('heartScore');
       location.reload();
     }
   });
