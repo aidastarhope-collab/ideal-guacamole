@@ -65,24 +65,26 @@
   heartImages.push(blueHeart, pinkHeart);
 
   // Herzen
-  let hearts = [];
-  let score = 0;
-  let timeLeft = 25; // Sekunden
-  let gameOver = false;
+ let heartCount = 0;        // Zähler für gespawnte Herzen
+const maxHearts = 40;      // maximale Anzahl
 
-  function spawnHeart(){
-    if(gameOver) return;
-    const img = heartImages[Math.floor(Math.random() * heartImages.length)];
-    hearts.push({ 
-      x: Math.random()*360, 
-      y: -10, 
-      vy: 1.6 + Math.random()*1.4,
-      img: img
-    });
-  }
+function spawnHeart(){
+  if(gameOver) return;
+  if(heartCount >= maxHearts) return; // keine weiteren Herzen spawnen
 
-  function draw(){
-    ctx.clearRect(0,0,400,400);
+  const available = heartImages.filter(i => i.complete && i.naturalWidth > 0);
+  if (available.length === 0) return; // nichts tun, falls noch nicht geladen
+
+  const img = available[Math.floor(Math.random() * available.length)];
+  hearts.push({
+    x: Math.random()* (400 - 24),
+    y: -24,
+    vy: 1.6 + Math.random()*1.4,
+    img
+  });
+  
+  heartCount++; // Anzahl hochzählen
+}
 
     // Spieler
     ctx.fillStyle = 'yellow';
