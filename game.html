@@ -55,15 +55,30 @@
 
   // Spieler
   const player = { x: 180, y: 360, w: 40, h: 20, speed: 20 };
+
+  // Herz-Bilder laden
+  const heartImages = [];
+  const blueHeart = new Image();
+  blueHeart.src = "blue-heart.png";
+  const pinkHeart = new Image();
+  pinkHeart.src = "pink-heart.png";
+  heartImages.push(blueHeart, pinkHeart);
+
   // Herzen
   let hearts = [];
   let score = 0;
-  let timeLeft = 25; // 20 Sekunden
+  let timeLeft = 25; // Sekunden
   let gameOver = false;
 
   function spawnHeart(){
     if(gameOver) return;
-    hearts.push({ x: Math.random()*360, y: -10, vy: 1.6 + Math.random()*1.4 });
+    const img = heartImages[Math.floor(Math.random() * heartImages.length)];
+    hearts.push({ 
+      x: Math.random()*360, 
+      y: -10, 
+      vy: 1.6 + Math.random()*1.4,
+      img: img
+    });
   }
 
   function draw(){
@@ -73,12 +88,14 @@
     ctx.fillStyle = 'yellow';
     ctx.fillRect(player.x, player.y, player.w, player.h);
 
-    // Herzen (Emoji Text)
-    ctx.font = '18px Arial';
-    ctx.fillStyle = 'red';
-    hearts.forEach(h => ctx.fillText('❤️', h.x, h.y));
+    // Herzen (Bilder)
+    hearts.forEach(h => {
+      if (h.img.complete) {
+        ctx.drawImage(h.img, h.x, h.y, 24, 24); // Größe anpassen
+      }
+    });
 
-    // HUD im Canvas (redundant)
+    // HUD im Canvas
     ctx.fillStyle = '#111';
     ctx.font = '14px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
@@ -100,7 +117,11 @@
       if(h.y > 420) return false; // unten raus
       const withinX = h.x > player.x && h.x < player.x + player.w;
       const withinY = h.y > player.y && h.y < player.y + player.h + 10;
-      if(withinX && withinY){ score++; scoreEl.textContent = score; return false; }
+      if(withinX && withinY){ 
+        score++; 
+        scoreEl.textContent = score; 
+        return false; 
+      }
       return true;
     });
   }
@@ -158,5 +179,3 @@
   loop();
 })();
 </script>
-</body>
-</html>
