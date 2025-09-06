@@ -212,14 +212,11 @@
     "Brief Nummer 7: Deine Kreativität und dein Mut inspirieren mich jeden Tag aufs Neue! 🎨",
     "Der achte Brief: Manchmal vergessen wir, wie wertvoll wir sind. Du bist ein echter Schatz! 💎",
     "Brief neun: Deine Freundlichkeit und dein großes Herz machen dich zu etwas ganz Besonderem! 💕",
-    "Test Brief",
-    "Test Brief2",
-    "mal schauen obs klappt"
     "Der letzte Brief: Du hast alle Briefe freigeschaltet! Das zeigt, wie großartig du bist. Ich bin stolz auf dich! 🎉✨"
   ];
 
   // Score aus Session Storage
-  const unlockedCount = parseInt(sessionStorage.getItem('heartScore') || '0', 10);
+  const unlockedCount = parseInt(sessionStorage.getItem('bananaScore') || '0', 10);
   
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
@@ -303,7 +300,7 @@
   // Reset Button
   document.getElementById('reset').addEventListener('click', () => {
     if (confirm('Möchtest du wirklich den Score zurücksetzen? Alle Briefe werden wieder gesperrt.')) {
-      sessionStorage.removeItem('heartScore');
+      sessionStorage.removeItem('bananaScore');
       location.reload();
     }
   });
