@@ -37,8 +37,8 @@
   <canvas id="game" width="400" height="400"></canvas>
 
   <div class="touch-controls">
-    <button class="touch-btn" id="leftBtn">⬅️ Links</button>
-    <button class="touch-btn" id="rightBtn">➡️ Rechts</button>
+    <button class="touch-btn" id="leftBtn">⬅️ left</button>
+    <button class="touch-btn" id="rightBtn">➡️ right</button>
   </div>
 
   <button id="nextBtn" onclick="window.location.href='letters.html'">continue</button>
@@ -58,7 +58,7 @@
   // Herzen
   let hearts = [];
   let score = 0;
-  let timeLeft = 20; // Exakt 20 Sekunden wie gewünscht
+  let timeLeft = 25; // 20 Sekunden
   let gameOver = false;
 
   function spawnHeart(){
