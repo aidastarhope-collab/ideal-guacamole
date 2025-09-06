@@ -53,47 +53,96 @@
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
 
-  // Spieler
+  // --------- Spieler ---------
   const player = { x: 180, y: 360, w: 40, h: 20, speed: 20 };
 
-  // Herz-Bilder laden
+  // --------- Bilder vorladen ---------
+  const heartSources = ["blue-heart.png", "pink-heart.png"]; // gleiche Ordner-Ebene wie HTML
   const heartImages = [];
-  const blueHeart = new Image();
-  blueHeart.src = "blue-heart.png";
-  const pinkHeart = new Image();
-  pinkHeart.src = "pink-heart.png";
-  heartImages.push(blueHeart, pinkHeart);
 
-  // Herzen
- let heartCount = 0;        // Zähler für gespawnte Herzen
-const maxHearts = 40;      // maximale Anzahl
+  let loadedCount = 0;
+  let playableCount = 0;
+  function tryStart() {
+    if (loadedCount === heartSources.length && playableCount > 0) startGame();
+  }
 
-function spawnHeart(){
-  if(gameOver) return;
-  if(heartCount >= maxHearts) return; // keine weiteren Herzen spawnen
-
-  const available = heartImages.filter(i => i.complete && i.naturalWidth > 0);
-  if (available.length === 0) return; // nichts tun, falls noch nicht geladen
-
-  const img = available[Math.floor(Math.random() * available.length)];
-  hearts.push({
-    x: Math.random()* (400 - 24),
-    y: -24,
-    vy: 1.6 + Math.random()*1.4,
-    img
+  heartSources.forEach(src => {
+    const img = new Image();
+    img.onload = () => { playableCount++; loadedCount++; tryStart(); };
+    img.onerror = () => { console.warn("Bild konnte nicht geladen werden:", src); loadedCount++; tryStart(); };
+    img.src = src;
+    heartImages.push(img);
   });
-  
-  heartCount++; // Anzahl hochzählen
-}
+
+  // --------- Game State ---------
+  let hearts = [];
+  let score = 0;
+  let timeLeft = 25;
+  let gameOver = false;
+
+  // Obergrenze für Spawn-Anzahl
+  let heartCount = 0;
+  const maxHearts = 40; // <— hier gewünschte Max-Anzahl einstellen
+
+  let spawner = null;
+  let stopCheck = null;
+  let timer = null;
+
+  function startGame(){
+    // Timer runterzählen
+    timer = setInterval(()=>{
+      if(timeLeft > 0){
+        timeLeft--; timeEl.textContent = timeLeft;
+      } else {
+        clearInterval(timer);
+        gameOver = true;
+        sessionStorage.setItem('heartScore', String(score));
+        nextBtn.style.display = 'inline-block';
+      }
+    }, 1000);
+
+    // Spawns
+    spawner = setInterval(spawnHeart, 800);
+
+    // Sicherheits-Stopp bei Game Over
+    stopCheck = setInterval(()=>{
+      if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); }
+    }, 300);
+
+    // Loop los
+    loop();
+  }
+
+  function spawnHeart(){
+    if(gameOver) return;
+    if(heartCount >= maxHearts) return; // keine weiteren Herzen erzeugen
+
+    // nur geladene Bilder verwenden
+    const available = heartImages.filter(i => i.complete && i.naturalWidth > 0);
+    if (available.length === 0) return;
+
+    const img = available[Math.floor(Math.random() * available.length)];
+    hearts.push({
+      x: Math.random()* (400 - 24),
+      y: -24,
+      vy: 1.6 + Math.random()*1.4,
+      img
+    });
+
+    heartCount++; // mitzählen
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,400,400);
 
     // Spieler
     ctx.fillStyle = 'yellow';
     ctx.fillRect(player.x, player.y, player.w, player.h);
 
-    // Herzen (Bilder)
+    // Herzen
     hearts.forEach(h => {
-      if (h.img.complete) {
-        ctx.drawImage(h.img, h.x, h.y, 24, 24); // Größe anpassen
+      if (h.img.complete && h.img.naturalWidth > 0) {
+        ctx.drawImage(h.img, h.x, h.y, 24, 24);
       }
     });
 
@@ -114,15 +163,16 @@ function spawnHeart(){
   function update(){
     if(gameOver) return;
     hearts.forEach(h => h.y += h.vy);
+
     // Kollisionen + Filter
     hearts = hearts.filter(h => {
-      if(h.y > 420) return false; // unten raus
-      const withinX = h.x > player.x && h.x < player.x + player.w;
-      const withinY = h.y > player.y && h.y < player.y + player.h + 10;
-      if(withinX && withinY){ 
-        score++; 
-        scoreEl.textContent = score; 
-        return false; 
+      if(h.y > 424) return false; // unten raus
+      const withinX = h.x + 12 > player.x && h.x + 12 < player.x + player.w; // Mittelpunkt prüfen
+      const withinY = h.y + 12 > player.y && h.y + 12 < player.y + player.h + 10;
+      if(withinX && withinY){
+        score++;
+        scoreEl.textContent = score;
+        return false;
       }
       return true;
     });
@@ -133,51 +183,29 @@ function spawnHeart(){
     requestAnimationFrame(loop);
   }
 
+  // --------- Steuerung ---------
   function moveLeft(){
     if(gameOver) return;
     player.x = Math.max(0, player.x - player.speed);
   }
-
   function moveRight(){
     if(gameOver) return;
-    player.x = Math.min(360, player.x + player.speed);
+    player.x = Math.min(400 - player.w, player.x + player.speed);
   }
 
-  // Keyboard-Steuerung
-  document.addEventListener('keydown', e=>{
+  // Keyboard: auf window hören + Scroll verhindern
+  window.addEventListener('keydown', e=>{
+    if(e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+      e.preventDefault();
+    }
     if(e.key === 'ArrowLeft') moveLeft();
     if(e.key === 'ArrowRight') moveRight();
-  });
+  }, { passive:false });
 
-  // Touch-Steuerung
+  // Touch
   leftBtn.addEventListener('click', moveLeft);
   rightBtn.addEventListener('click', moveRight);
-  
-  // Touch events für bessere mobile Erfahrung
-  leftBtn.addEventListener('touchstart', e => {e.preventDefault(); moveLeft();});
-  rightBtn.addEventListener('touchstart', e => {e.preventDefault(); moveRight();});
-
-  // Timer runterzählen
-  const timer = setInterval(()=>{
-    if(timeLeft > 0){
-      timeLeft--; timeEl.textContent = timeLeft;
-    } else {
-      clearInterval(timer);
-      gameOver = true;
-      // Score für diese Session speichern
-      sessionStorage.setItem('heartScore', String(score));
-      nextBtn.style.display = 'inline-block';
-    }
-  }, 1000);
-
-  // Spawns
-  const spawner = setInterval(spawnHeart, 800);
-
-  // Sicherheits-Stopp bei Game Over
-  const stopCheck = setInterval(()=>{
-    if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); }
-  }, 300);
-
-  loop();
+  leftBtn.addEventListener('touchstart', e => {e.preventDefault(); moveLeft();}, {passive:false});
+  rightBtn.addEventListener('touchstart', e => {e.preventDefault(); moveRight();}, {passive:false});
 })();
 </script>
