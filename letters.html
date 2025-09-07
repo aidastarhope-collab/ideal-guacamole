@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
-<title>💌 Briefe für dich</title>
+<title>💌 letters</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
@@ -189,7 +189,7 @@
 <body>
 
 <header>
-  <h1>📜 Briefe für dich</h1>
+  <h1>📜 letters</h1>
   <div class="meta" id="meta">–</div>
   <div class="actions">
     <a href="game.html" class="btn primary">⬅️ Zurück zum Spiel</a>
@@ -203,15 +203,6 @@
 (() => {
   // Brief-Inhalte - hier kannst du weitere Briefe hinzufügen!
   const MESSAGES = [
-    "Liebe/r [Name], dies ist dein erster Brief! Ich freue mich so sehr, dass du das Spiel gemeistert hast. Du bist wirklich besonders! ❤️",
-    "Brief Nummer 2: Erinnerst du dich noch an [gemeinsame Erinnerung]? Das war einer der schönsten Momente mit dir! 🌟",
-    "Der dritte Brief: Deine [positive Eigenschaft] beeindruckt mich immer wieder. Du machst die Welt zu einem besseren Ort! 🌈",
-    "Brief vier ist da: Egal was passiert, ich bin immer für dich da. Unsere Freundschaft bedeutet mir unendlich viel! 🤗",
-    "Brief fünf: Du hast schon so viel erreicht! Jeder Schritt zeigt deine Stärke und Entschlossenheit. 💪",
-    "Sechster Brief: Weißt du, wie stolz ich auf dich bin? Du bringst so viel Licht in diese Welt! ✨",
-    "Brief Nummer 7: Deine Kreativität und dein Mut inspirieren mich jeden Tag aufs Neue! 🎨",
-    "Der achte Brief: Manchmal vergessen wir, wie wertvoll wir sind. Du bist ein echter Schatz! 💎",
-    "Brief neun: Deine Freundlichkeit und dein großes Herz machen dich zu etwas ganz Besonderem! 💕",
     "Test Versuch",
     "Test Versuch",
     "Test Versuch",
@@ -222,7 +213,19 @@
     "Test Versuch",
     "Test Versuch",
     "Test Versuch",
-    "Der letzte Brief: Du hast alle Briefe freigeschaltet! Das zeigt, wie großartig du bist. Ich bin stolz auf dich! 🎉✨"
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "Test Versuch",
+    "letztes Test"
   ];
 
   // Score aus Session Storage
@@ -276,11 +279,11 @@
     
     const title = document.createElement('h3');
     title.className = 'card-title';
-    title.innerHTML = `Brief ${index + 1} <span class="badge">${isUnlocked ? 'freigeschaltet' : 'gesperrt'}</span>`;
+    title.innerHTML = `letter ${index + 1} <span class="badge">${isUnlocked ? 'unlocked' : 'locked'}</span>`;
     
     const button = document.createElement('button');
     button.className = 'toggle-btn';
-    button.textContent = isUnlocked ? 'Öffnen' : 'Gesperrt';
+    button.textContent = isUnlocked ? 'open' : 'locked';
     
     if (!isUnlocked) {
       button.disabled = true;
@@ -291,10 +294,10 @@
         isOpen = !isOpen;
         if (isOpen) {
           card.classList.add('opened');
-          button.textContent = 'Schließen';
+          button.textContent = 'close';
         } else {
           card.classList.remove('opened');
-          button.textContent = 'Öffnen';
+          button.textContent = 'open';
         }
       });
     }
@@ -309,7 +312,7 @@
 
   // Reset Button
   document.getElementById('reset').addEventListener('click', () => {
-    if (confirm('Möchtest du wirklich den Score zurücksetzen? Alle Briefe werden wieder gesperrt.')) {
+    if (confirm('reset score?')) {
       sessionStorage.removeItem('heartScore');
       location.reload();
     }
