@@ -80,7 +80,7 @@
   let wonByScore = false;
 
   let heartCount = 0;
-  const maxHearts = 70;
+  const maxHearts = 80;
 
   let spawner = null;
   let stopCheck = null;
@@ -95,7 +95,7 @@
       }
     }, 1000);
 
-    spawner = setInterval(spawnHeart, 700);
+    spawner = setInterval(spawnHeart, 500);
     stopCheck = setInterval(()=>{ if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); } }, 300);
     loop();
   }
