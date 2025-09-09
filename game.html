@@ -83,7 +83,7 @@
   let gameOver = false;
 
   let heartCount = 0;
-  const maxHearts = 40;
+  const maxHearts = 70;
 
   let spawner = null;
   let stopCheck = null;
@@ -103,7 +103,7 @@
     }, 1000);
 
     // Spawns
-    spawner = setInterval(spawnHeart, 300);
+    spawner = setInterval(spawnHeart, 700);
 
     // Sicherheits-Stopp bei Game Over
     stopCheck = setInterval(()=>{
