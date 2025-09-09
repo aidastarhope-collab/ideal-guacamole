@@ -95,7 +95,7 @@
       }
     }, 1000);
 
-    spawner = setInterval(spawnHeart, 500);
+    spawner = setInterval(spawnHeart, 450);
     stopCheck = setInterval(()=>{ if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); } }, 300);
     loop();
   }
