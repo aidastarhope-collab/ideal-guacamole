@@ -34,13 +34,12 @@
 
 <canvas id="game" width="400" height="400"></canvas>
 
+<div class="touch-controls">
+  <button class="touch-btn" id="leftBtn">⬅️ left</button>
+  <button class="touch-btn" id="rightBtn">➡️ right</button>
+</div>
 
-  <div class="touch-controls">
-    <button class="touch-btn" id="leftBtn">⬅️ left</button>
-    <button class="touch-btn" id="rightBtn">➡️ right</button>
-  </div>
-
-  <button id="nextBtn" onclick="window.location.href='letters.html'">continue</button>
+<button id="nextBtn" onclick="window.location.href='letters.html'">continue</button>
 
 <script>
 (() => {
@@ -50,15 +49,13 @@
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
 
-  // --------- Spieler (Körbchen) ---------
   const BASKET_W = 60;
   const BASKET_H = 60;
   const player = { x: 180, y: 340, w: BASKET_W, h: BASKET_H, speed: 20 };
 
   const basketImg = new Image();
-  basketImg.src = "basket.png"; // dein Körbchen-Bild
+  basketImg.src = "basket.png";
 
-  // --------- Herz-Bilder vorladen ---------
   const heartSources = ["blue-heart.png", "pink-heart.png"];
   const heartImages = [];
 
@@ -76,11 +73,11 @@
     heartImages.push(img);
   });
 
-  // --------- Game State ---------
   let hearts = [];
   let score = 0;
   let timeLeft = 30;
   let gameOver = false;
+  let wonByScore = false;
 
   let heartCount = 0;
   const maxHearts = 70;
@@ -90,27 +87,28 @@
   let timer = null;
 
   function startGame(){
-    // Timer
     timer = setInterval(()=>{
       if(timeLeft > 0){
         timeLeft--;
       } else {
-        clearInterval(timer);
-        gameOver = true;
-        sessionStorage.setItem('heartScore', String(score));
-        nextBtn.style.display = 'inline-block';
+        endGame(false);
       }
     }, 1000);
 
-    // Spawns
     spawner = setInterval(spawnHeart, 700);
-
-    // Sicherheits-Stopp bei Game Over
-    stopCheck = setInterval(()=>{
-      if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); }
-    }, 300);
-
+    stopCheck = setInterval(()=>{ if(gameOver){ clearInterval(spawner); clearInterval(stopCheck); } }, 300);
     loop();
+  }
+
+  function endGame(won){
+    if (gameOver) return;
+    gameOver = true;
+    wonByScore = won;
+    clearInterval(timer);
+    clearInterval(spawner);
+    clearInterval(stopCheck);
+    sessionStorage.setItem('heartScore', String(score));
+    nextBtn.style.display = 'inline-block';
   }
 
   function spawnHeart(){
@@ -134,7 +132,6 @@
   function draw(){
     ctx.clearRect(0,0,400,400);
 
-    // Spieler (Körbchen oder Fallback-Rechteck)
     if (basketImg.complete && basketImg.naturalWidth > 0) {
       ctx.drawImage(basketImg, player.x, player.y, player.w, player.h);
     } else {
@@ -142,14 +139,12 @@
       ctx.fillRect(player.x, player.y, player.w, player.h);
     }
 
-    // Herzen
     hearts.forEach(h => {
       if (h.img.complete && h.img.naturalWidth > 0) {
         ctx.drawImage(h.img, h.x, h.y, 24, 24);
       }
     });
 
-    // HUD (nur im Canvas)
     ctx.fillStyle = '#111';
     ctx.font = '14px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
@@ -158,7 +153,11 @@
     if(gameOver){
       ctx.fillStyle = '#111';
       ctx.font = '22px Arial';
-      ctx.fillText('⏳ time is over!', 105, 200);
+      if(wonByScore){
+        ctx.fillText('🎉 Du hast gewonnen!', 85, 200);
+      } else {
+        ctx.fillText('⏳ time is over!', 105, 200);
+      }
       ctx.fillText('Endscore: ' + score, 135, 230);
     }
   }
@@ -167,7 +166,6 @@
     if(gameOver) return;
     hearts.forEach(h => h.y += h.vy);
 
-    // Kollisionen
     hearts = hearts.filter(h => {
       if(h.y > 424) return false;
       const heartCx = h.x + 12, heartCy = h.y + 12;
@@ -179,6 +177,11 @@
       }
       return true;
     });
+
+    // 💡 Spiel beenden bei 50 gesammelten Herzen
+    if (score >= 50 && !gameOver) {
+      endGame(true);
+    }
   }
 
   function loop(){
@@ -186,7 +189,6 @@
     requestAnimationFrame(loop);
   }
 
-  // --------- Steuerung ---------
   function moveLeft(){
     if(gameOver) return;
     player.x = Math.max(0, player.x - player.speed);
@@ -210,3 +212,5 @@
   rightBtn.addEventListener('touchstart', e => {e.preventDefault(); moveRight();}, {passive:false});
 })();
 </script>
+</body>
+</html>
