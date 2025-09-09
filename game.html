@@ -46,35 +46,32 @@
 (() => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  const scoreEl = document.getElementById('scoreEl');
-  const timeEl = document.getElementById('timeEl');
   const nextBtn = document.getElementById('nextBtn');
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
 
   // --------- Spieler (Körbchen) ---------
-  const BASKET_W = 60;   // <- hier Größe anpassen
+  const BASKET_W = 60;
   const BASKET_H = 60;
   const player = { x: 180, y: 340, w: BASKET_W, h: BASKET_H, speed: 20 };
 
   const basketImg = new Image();
   basketImg.src = "basket.png"; // dein Körbchen-Bild
 
-  // --------- Herz-Bilder vorladen (Startbedingung) ---------
+  // --------- Herz-Bilder vorladen ---------
   const heartSources = ["blue-heart.png", "pink-heart.png"];
   const heartImages = [];
 
   let loadedCount = 0;
   let playableCount = 0;
   function tryStart() {
-    // Start, sobald mind. ein Herzbild vorhanden ist
     if (loadedCount === heartSources.length && playableCount > 0) startGame();
   }
 
   heartSources.forEach(src => {
     const img = new Image();
-    img.onload    = () => { playableCount++; loadedCount++; tryStart(); };
-    img.onerror   = () => { console.warn("Bild konnte nicht geladen werden:", src); loadedCount++; tryStart(); };
+    img.onload  = () => { playableCount++; loadedCount++; tryStart(); };
+    img.onerror = () => { console.warn("Bild konnte nicht geladen werden:", src); loadedCount++; tryStart(); };
     img.src = src;
     heartImages.push(img);
   });
@@ -85,9 +82,8 @@
   let timeLeft = 25;
   let gameOver = false;
 
-  // Obergrenze für Spawn-Anzahl
   let heartCount = 0;
-  const maxHearts = 40; // <— hier gewünschte Max-Anzahl einstellen
+  const maxHearts = 40;
 
   let spawner = null;
   let stopCheck = null;
@@ -97,7 +93,7 @@
     // Timer
     timer = setInterval(()=>{
       if(timeLeft > 0){
-        timeLeft--; timeEl.textContent = timeLeft;
+        timeLeft--;
       } else {
         clearInterval(timer);
         gameOver = true;
@@ -119,7 +115,7 @@
 
   function spawnHeart(){
     if(gameOver) return;
-    if(heartCount >= maxHearts) return; // Obergrenze
+    if(heartCount >= maxHearts) return;
 
     const available = heartImages.filter(i => i.complete && i.naturalWidth > 0);
     if (available.length === 0) return;
@@ -153,7 +149,7 @@
       }
     });
 
-    // HUD
+    // HUD (nur im Canvas)
     ctx.fillStyle = '#111';
     ctx.font = '14px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
@@ -171,7 +167,7 @@
     if(gameOver) return;
     hearts.forEach(h => h.y += h.vy);
 
-    // Kollisionen (mit Körbchen-Mitte & Herz-Mitte)
+    // Kollisionen
     hearts = hearts.filter(h => {
       if(h.y > 424) return false;
       const heartCx = h.x + 12, heartCy = h.y + 12;
@@ -179,7 +175,6 @@
       const withinY = heartCy > player.y && heartCy < player.y + player.h + 10;
       if(withinX && withinY){
         score++;
-        scoreEl.textContent = score;
         return false;
       }
       return true;
