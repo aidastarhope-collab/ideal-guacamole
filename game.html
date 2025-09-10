@@ -147,18 +147,18 @@
 
     ctx.fillStyle = '#111';
     ctx.font = '14px Arial';
-    ctx.fillText('Score: ' + score, 10, 20);
-    ctx.fillText('Zeit: ' + timeLeft + 's', 330, 20);
+    ctx.fillText('𝐬𝐜𝐨𝐫𝐞: ' + score, 10, 20);
+    ctx.fillText('𝐭𝐢𝐦𝐞: ' + timeLeft + 's', 330, 20);
 
     if(gameOver){
       ctx.fillStyle = '#111';
       ctx.font = '22px Arial';
       if(wonByScore){
-        ctx.fillText('🎉 Du hast gewonnen!', 85, 200);
+        ctx.fillText('game ended - all hearts collected!', 85, 200);
       } else {
-        ctx.fillText('⏳ time is over!', 105, 200);
+        ctx.fillText('game ended - time is over!', 105, 200);
       }
-      ctx.fillText('Endscore: ' + score, 135, 230);
+      ctx.fillText('𝐞𝐧𝐝𝐬𝐜𝐨𝐫𝐞: ' + score, 135, 230);
     }
   }
 
